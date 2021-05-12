@@ -1,5 +1,5 @@
 -- Following information about products should be stored:
--- Product name
+-- Name
 -- Calories per 100g
 -- Category
 -- Vegetarian/Vegan
@@ -7,14 +7,28 @@
 
 CREATE TABLE IF NOT EXISTS Products (
     id BIGINT auto_increment PRIMARY KEY,
-    product_name VARCHAR(100) NOT NULL,
+    name VARCHAR(150) NOT NULL,
     calories_per_100g INT NOT NULL,
     category VARCHAR(100) NOT NULL,
     notes VARCHAR(50) NULL
 );
 
+CREATE TABLE IF NOT EXISTS Dishes (
+    id BIGINT auto_increment PRIMARY KEY,
+    name VARCHAR(150) NOT NULL,
+    category VARCHAR(100) NOT NULL,
+    notes VARCHAR(50) NULL
+);
+
+CREATE TABLE IF NOT EXISTS Ingredients (
+    dish BIGINT,
+    ingredient BIGINT,
+    foreign key (dish) references Dishes(id),
+    foreign key (ingredient) references Products(id)
+);
+
 INSERT INTO Products
-(product_name,calories_per_100g,category,notes) VALUES
+(name,calories_per_100g,category,notes) VALUES
 ('Apple', 52, 'Fruits', 'Vegan'),
 ('Apricot', 48, 'Fruits', 'Vegan'),
 ('Banana', 89, 'Fruits', 'Vegan'),
@@ -31,9 +45,8 @@ INSERT INTO Products
 ('Rabbit, cooked', 172, 'Meat', NULL),
 ('Lamb, cooked', 265, 'Meat', NULL),
 ('Ground beef, cooked', 260, 'Meat', NULL),
-('Beef steak, fried', 235, 'Meat', NULL),
 ('Pork belly, cooked', 518, 'Meat', NULL),
-('Roast chicken', 223, 'Poultry'', NULL),
+('Roast chicken', 223, 'Poultry', NULL),
 ('Chicken breast, cooked', 175, 'Poultry', NULL),
 ('Duck, cooked', 336, 'Poultry', NULL),
 ('Goose, roasted', 304, 'Poultry', NULL),
@@ -43,29 +56,66 @@ INSERT INTO Products
 ('Milk, whole', 60, 'Dairy', 'Vegetarian'),
 ('Yogurt, plain, low-fat', 63, 'Dairy', 'Vegetarian');
 
+INSERT INTO Dishes
+(name,category,notes) VALUES
+('Fruit salad', 'Dessert', 'Vegetarian');
+
+INSERT INTO Ingredients VALUES
+(1, 1),
+(1, 2),
+(1, 3),
+(1, 4),
+(1, 5),
+(1, 26);
+
+-- list all dishes
+SELECT * FROM Dishes;
+
+-- list all dishes that belongs to the same category
+SELECT *
+FROM Dishes
+WHERE category = ?;
+
+-- list all dishes marked as vegetarian or vegan
+SELECT *
+FROM Dishes
+WHERE notes = ?;
+
+-- list all ingredients for a dish X
+SELECT p.name
+FROM Products p
+    JOIN Ingredients i ON p.id = i.ingredient
+    JOIN Dishes d ON i.dish = d.id
+WHERE d.name = ?;
+
+-- add a dish
+INSERT INTO Dishes
+(name,category,notes) VALUES
+(?, ?, ?);
+
+-- remove a dish
+DELETE FROM Dishes WHERE id = ?;
+
+-- list all products
+SELECT * FROM Products;
+
 -- add a product
 INSERT INTO Products
-(product_name,calories_per_100g,category,notes) VALUES
+(name,calories_per_100g,category,notes) VALUES
 (?, ?, ?, ?);
 
 -- remove a product
 DELETE FROM Products WHERE id = ?;
 
-
-
 -- modify product information
 UPDATE Products
-SET product_name = ?,calories_per_100g = ?,category = ?,notes = ?
+SET name = ?,calories_per_100g = ?,category = ?,notes = ?
 WHERE id = ?;
 
--- list all products
-SELECT * FROM Products;
-
--- list all products that belongs to the same category ordered by calories amount
+-- list all products that belongs to the same category
 SELECT *
 FROM Products
-WHERE category = ?
-ORDER By calories_per_100g;
+WHERE category = ?;
 
 -- list all products marked as vegetarian or vegan
 SELECT *
@@ -75,7 +125,7 @@ WHERE notes = ?;
 -- find a product by product name
 SELECT *
 FROM Products
-WHERE product_name = ?;
+WHERE name = ?;
 
 -- find products with calories amount is equal to X
 SELECT *
